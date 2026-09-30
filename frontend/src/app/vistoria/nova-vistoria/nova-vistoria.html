@@ -1,0 +1,74 @@
+<section class="card">
+  <h1>Nova vistoria</h1>
+
+  <form (ngSubmit)="salvar()">
+    <label>
+      Placa do veículo
+      <input
+        type="text"
+        name="placa"
+        [(ngModel)]="placa"
+        placeholder="ABC1D23"
+        maxlength="8"
+        required
+      />
+    </label>
+
+    <h2>Checklist</h2>
+
+    @for (item of itens; track item.nome) {
+      <div class="item">
+        <span class="item-nome">{{ item.nome }}</span>
+
+        <label class="status">
+          <input type="radio" [name]="item.nome" value="OK" [(ngModel)]="item.status" />
+          OK
+        </label>
+        <label class="status">
+          <input type="radio" [name]="item.nome" value="DEFEITO" [(ngModel)]="item.status" />
+          Defeito
+        </label>
+
+        <input
+          type="text"
+          class="observacao"
+          placeholder="Observação (opcional)"
+          [(ngModel)]="item.observacao"
+          [name]="item.nome + '-obs'"
+        />
+      </div>
+    }
+
+    <button type="submit" [disabled]="enviando()">
+      {{ enviando() ? 'Salvando...' : 'Salvar vistoria' }}
+    </button>
+  </form>
+
+  @if (mensagem()) {
+    <p class="sucesso">{{ mensagem() }}</p>
+  }
+  @if (erro()) {
+    <p class="erro">{{ erro() }}</p>
+  }
+</section>
+
+<section class="card">
+  <h2>Vistorias cadastradas</h2>
+
+  @if (vistorias().length === 0) {
+    <p>Nenhuma vistoria cadastrada ainda.</p>
+  } @else {
+    <ul>
+      @for (v of vistorias(); track v.id) {
+        <li>
+          <strong>{{ v.placa }}</strong> —
+          @for (item of v.itens; track item.nome) {
+            <span class="tag" [class.tag-defeito]="item.status === 'DEFEITO'">
+              {{ item.nome }}: {{ item.status }}
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

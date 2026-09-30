@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: checkfleet-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: checkfleet
+      POSTGRES_USER: checkfleet
+      POSTGRES_PASSWORD: checkfleet123
+    ports:
+      - "5432:5432"
+    volumes:
+      - checkfleet_pgdata:/var/lib/postgresql/data
+
+volumes:
+  checkfleet_pgdata:

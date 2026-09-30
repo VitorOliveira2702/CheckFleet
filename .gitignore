@@ -1,0 +1,17 @@
+# IDEs e editores
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Reforço (cada subprojeto já tem seu próprio .gitignore mais específico)
+node_modules/
+target/
+dist/
+*.log
