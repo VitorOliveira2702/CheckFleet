@@ -1,0 +1,71 @@
+<div class="pagina">
+  <h1 class="titulo-tela">Laudos</h1>
+
+  <label class="campo">
+    <span class="rotulo">Buscar por placa</span>
+    <input
+      class="input mono"
+      type="search"
+      placeholder="ABC1D23"
+      autocapitalize="characters"
+      [ngModel]="busca()"
+      (ngModelChange)="busca.set($event)"
+    />
+  </label>
+
+  @if (mensagem()) {
+    <p class="aviso aviso-info" role="status">{{ mensagem() }}</p>
+  }
+
+  @if (carregando()) {
+    <div class="skeleton" style="height: 132px"></div>
+    <div class="skeleton" style="height: 132px"></div>
+    <div class="skeleton" style="height: 132px"></div>
+  } @else if (erro()) {
+    <div class="card vazio">
+      <app-icone nome="alerta" [tamanho]="32" />
+      <p>Não foi possível ler os laudos salvos no aparelho.</p>
+      <button type="button" class="btn btn-secundario" (click)="carregar()">Tentar novamente</button>
+    </div>
+  } @else if (filtradas().length === 0) {
+    <div class="card vazio">
+      <app-icone nome="laudo" [tamanho]="32" />
+      <p>{{ busca() ? 'Nenhum laudo para essa placa.' : 'Nenhum laudo ainda.' }}</p>
+      @if (!busca()) {
+        <a routerLink="/vistorias/nova" class="btn btn-primario">Nova vistoria</a>
+      }
+    </div>
+  } @else {
+    @for (v of filtradas(); track v.id) {
+      <article class="card pilha">
+        <div class="topo-laudo">
+          <div>
+            <span class="placa mono">{{ v.placa }}</span>
+            <p class="rotulo">{{ v.dataHora | date: 'dd/MM/yyyy HH:mm' }} · {{ v.finalidade || 'Vistoria' }}</p>
+          </div>
+          <app-chip-parecer [parecer]="parecer(v.itens)" />
+        </div>
+
+        <div class="meta rotulo">
+          <span>Conformidade <b>{{ conformidade(v.itens) }}%</b></span>
+          <span>{{ v.fotos.length }} foto(s)</span>
+          @if (sync.idsPendentes().has(v.id)) {
+            <span class="chip chip-offline"><app-icone nome="offline" [tamanho]="14" /> Pendente de sync</span>
+          }
+          @if (v.vistoriadorNome) {
+            <span>{{ v.vistoriadorNome }}</span>
+          }
+        </div>
+
+        <div class="acoes">
+          <button type="button" class="btn btn-secundario" [disabled]="gerando() === v.id" (click)="baixar(v)">
+            <app-icone nome="baixar" [tamanho]="20" /> PDF
+          </button>
+          <button type="button" class="btn btn-secundario" [disabled]="gerando() === v.id" (click)="compartilhar(v)">
+            <app-icone nome="email" [tamanho]="20" /> E-mail
+          </button>
+        </div>
+      </article>
+    }
+  }
+</div>

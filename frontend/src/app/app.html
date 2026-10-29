@@ -1,5 +1,52 @@
-<header class="app-header">
-  <h1>CheckFleet</h1>
-</header>
+@if (auth.logado()) {
+  <header class="topo">
+    <div class="topo-conteudo">
+      <span class="marca" aria-label="CheckFleet">
+        <span class="simbolo"><app-icone nome="check" [tamanho]="18" /></span>
+        <span><b>Check</b>Fleet</span>
+      </span>
 
-<router-outlet />
+      @if (conectividade.online()) {
+        <span class="estado"><app-icone nome="online" [tamanho]="18" /> Online</span>
+      } @else {
+        <span class="estado"><app-icone nome="offline" [tamanho]="18" /> Offline</span>
+      }
+    </div>
+  </header>
+
+  @if (!conectividade.online()) {
+    <div class="banner banner-offline" role="status">
+      <app-icone nome="offline" [tamanho]="18" />
+      Modo offline: as vistorias ficam salvas no aparelho
+      @if (sync.idsPendentes().size) {
+        ({{ sync.idsPendentes().size }} na fila)
+      }
+    </div>
+  } @else if (sync.sincronizando()) {
+    <div class="banner banner-sync" role="status">
+      <app-icone nome="online" [tamanho]="18" />
+      Sincronizando {{ sync.idsPendentes().size }} vistoria(s)...
+    </div>
+  } @else if (sync.idsPendentes().size) {
+    <div class="banner banner-offline" role="status">
+      <app-icone nome="alerta" [tamanho]="18" />
+      {{ sync.idsPendentes().size }} vistoria(s) aguardando envio ao servidor
+      <button type="button" class="banner-acao" (click)="sync.sincronizar()">Enviar agora</button>
+    </div>
+  }
+}
+
+<main>
+  <router-outlet />
+</main>
+
+@if (auth.logado()) {
+  <nav class="nav-inferior" aria-label="Navegação principal">
+    @for (aba of abas; track aba.rota) {
+      <a [routerLink]="aba.rota" routerLinkActive="ativo" #link="routerLinkActive" [attr.aria-current]="link.isActive ? 'page' : null">
+        <app-icone [nome]="aba.icone" />
+        <span>{{ aba.rotulo }}</span>
+      </a>
+    }
+  </nav>
+}

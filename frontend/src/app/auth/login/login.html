@@ -1,0 +1,38 @@
+<div class="login">
+  <div class="topo">
+    <span class="simbolo"><app-icone nome="escudo" [tamanho]="40" /></span>
+    <h1 class="marca"><b>Check</b>Fleet</h1>
+    <p>Vistoria de frotas em campo, com ou sem sinal.</p>
+  </div>
+
+  <section class="card pilha cartao">
+    <h2 class="titulo-secao">Entrar</h2>
+    <p class="muted">Use sua conta Google. Depois do primeiro acesso, o app abre mesmo sem internet.</p>
+
+    @if (expirou) {
+      <p class="aviso aviso-info"><app-icone nome="alerta" [tamanho]="20" /> Sua sessão expirou. Entre novamente.</p>
+    }
+
+    @if (!auth.configurado) {
+      <div class="aviso aviso-erro">
+        <app-icone nome="alerta" [tamanho]="20" />
+        <span>
+          Login com Google ainda não configurado. Coloque o Client ID em
+          <code>src/app/auth/auth.config.ts</code> e na variável <code>GOOGLE_CLIENT_ID</code> do backend.
+        </span>
+      </div>
+    } @else {
+      <div #botaoGoogle class="botao-google"></div>
+    }
+
+    @if (erro()) {
+      <div class="aviso aviso-erro">
+        <app-icone nome="offline" [tamanho]="20" />
+        <span>{{ erro() }}</span>
+      </div>
+      <button type="button" class="btn btn-secundario" [disabled]="!conectividade.online()" (click)="mostrarBotaoGoogle()">
+        Tentar novamente
+      </button>
+    }
+  </section>
+</div>

@@ -49,6 +49,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+		<!-- Valida o token do login com Google em cada requisição (ver SecurityConfig) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+		</dependency>
 		<!-- Driver JDBC do PostgreSQL: sem ele o Spring não consegue conectar ao banco -->
 		<dependency>
 			<groupId>org.postgresql</groupId>

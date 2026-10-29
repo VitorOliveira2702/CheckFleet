@@ -60,9 +60,30 @@ A aplicação abre em `http://localhost:4200`.
 - [x] Front-end Angular com suporte a PWA configurado
 - [x] Back-end Spring Boot conectado ao PostgreSQL via Docker
 - [x] Cadastro e listagem de vistorias (online)
-- [ ] Persistência local com IndexedDB (modo offline)
-- [ ] Fila de sincronização e detecção de conectividade
+- [x] Persistência local com IndexedDB (modo offline)
+- [x] Fila de sincronização em lote e detecção de conectividade
+- [x] Login com Google, anexo de fotos e laudo em PDF
 - [ ] Testes de carga e resiliência a falhas (100/500 registros, falha parcial de API)
+
+## Como testar o modo offline
+
+O Service Worker só é ativado no **build de produção** (no `ng serve` ele fica desligado),
+então para testar o app abrindo sem internet:
+
+```bash
+cd frontend
+ng build
+npx http-server dist/frontend/browser -p 4200 -c-1
+```
+
+1. Abra `http://localhost:4200`, faça login e navegue um pouco (o Service Worker instala e guarda o app no cache).
+2. No DevTools (F12) → aba **Network**, marque **Offline**.
+3. Recarregue a página: o app abre pelo cache. Faça uma vistoria: ela fica salva no IndexedDB
+   como "Pendente de sync" (veja em DevTools → **Application** → **IndexedDB** → `checkfleet`).
+4. Desmarque **Offline**: a fila é enviada em lote para `POST /api/vistorias/lote` e o chip some.
+
+> O `ng serve` também salva offline (IndexedDB funciona nele), mas se a página for
+> recarregada sem internet ela não abre, porque ali não há Service Worker.
 
 ## Contexto acadêmico
 

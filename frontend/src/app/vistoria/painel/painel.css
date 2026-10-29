@@ -1,0 +1,90 @@
+.saudacao .rotulo::first-letter {
+  text-transform: uppercase;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+}
+
+.kpi-numero {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--primary);
+}
+
+.kpi-numero small {
+  font-size: 1rem;
+}
+
+.cta {
+  justify-content: flex-start;
+  min-height: 72px;
+  padding: 0 20px;
+}
+
+.cta-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1.0625rem;
+}
+
+.cta-texto small {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.cabecalho-lista {
+  justify-content: space-between;
+}
+
+.link {
+  color: var(--primary-600);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.item-vistoria {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.item-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.placa {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.pendente {
+  align-self: flex-start;
+}
+
+.item-vistoria .btn {
+  align-self: flex-start;
+  margin-left: -12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .kpi-numero {
+    color: var(--ink);
+  }
+}

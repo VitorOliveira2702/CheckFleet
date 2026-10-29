@@ -1,99 +1,257 @@
-.card {
-  max-width: 640px;
-  margin: 1.5rem auto;
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-family: system-ui, sans-serif;
+.com-rodape {
+  padding-bottom: calc(var(--altura-nav) + 104px);
 }
 
-h1 {
-  margin-top: 0;
+/* ---------- Stepper ---------- */
+.stepper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-label {
-  display: block;
-  margin-bottom: 1rem;
-  font-weight: 600;
+.stepper li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 3px solid var(--border);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
 }
 
-input[type='text'] {
-  display: block;
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.5rem;
-  box-sizing: border-box;
-  font-weight: normal;
+.stepper li.atual,
+.stepper li.feita {
+  border-color: var(--primary-600);
+  color: var(--ink);
 }
 
-.item {
+.bolinha {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--offline-bg);
+  font-weight: 700;
+}
+
+.atual .bolinha,
+.feita .bolinha {
+  background: var(--primary-600);
+  color: #ffffff;
+}
+
+/* ---------- Etapa 1 ---------- */
+.placa {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.finalidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.finalidade {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.item-nome {
-  flex: 1 0 140px;
+  justify-content: center;
+  gap: 6px;
+  min-height: 64px;
   font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  border-width: 2px;
 }
 
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-weight: normal;
+.finalidade.selecionada {
+  border-color: var(--primary-600);
+  color: var(--primary-600);
+}
+
+/* ---------- Etapa 2 ---------- */
+.item-cabecalho {
+  justify-content: space-between;
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.foto {
+  position: relative;
   margin: 0;
+  border-radius: var(--raio-campo);
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
-.observacao {
-  flex: 2 0 160px;
+.foto img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
-button {
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  background: #1a73e8;
-  color: white;
+.legenda {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8125rem;
+}
+
+.remover {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(16, 24, 40, 0.7);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.adicionar-foto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 140px;
+  border: 2px dashed var(--border);
+  border-radius: var(--raio-campo);
+  color: var(--primary-600);
   font-weight: 600;
   cursor: pointer;
 }
 
-button:disabled {
+.adicionar-foto.ocupado {
   opacity: 0.6;
-  cursor: not-allowed;
 }
 
-.sucesso {
-  color: #1e7e34;
+.adicionar-foto input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
-.erro {
-  color: #c62828;
+/* ---------- Etapa 3 ---------- */
+.resumo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-ul {
-  list-style: none;
+/* Anel de conformidade 0–100% feito com conic-gradient */
+.anel {
+  --valor: 0;
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary-600) calc(var(--valor) * 1%), var(--border) 0);
+}
+
+.anel span {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.placa-resumo {
+  font-size: 1.25rem;
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.dados dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.lista-itens {
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
+.lista-itens li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.tag {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  background: #e8f5e9;
-  font-size: 0.85rem;
+.lista-itens li:last-child {
+  border-bottom: 0;
 }
 
-.tag-defeito {
-  background: #ffebee;
+.lista-itens small {
+  display: block;
+}
+
+/* ---------- Rodapé fixo ---------- */
+.rodape-acoes {
+  position: fixed;
+  inset: auto 0 calc(var(--altura-nav) + env(safe-area-inset-bottom)) 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.rodape-acoes .btn {
+  flex: 1;
+  min-height: 56px;
+}
+
+/* ---------- Concluído ---------- */
+.concluido {
+  align-items: center;
+  text-align: center;
+}
+
+.icone-sucesso {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  color: var(--success);
 }

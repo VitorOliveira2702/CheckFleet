@@ -1,10 +1,121 @@
-.app-header {
-  padding: 1rem 1.5rem;
-  background: #0d47a1;
-  color: white;
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--primary);
+  color: var(--on-primary);
+  padding-top: env(safe-area-inset-top);
 }
 
-.app-header h1 {
-  margin: 0;
+.topo-conteudo {
+  max-width: 720px;
+  margin: 0 auto;
+  height: 56px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.marca b {
+  font-weight: 700;
+}
+
+.simbolo {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px 8px 12px 12px; /* formato de escudo */
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--accent);
+}
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.banner {
+  position: sticky;
+  top: calc(56px + env(safe-area-inset-top));
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.banner-offline {
+  background: #475467;
+}
+
+.banner-sync {
+  background: #0b79b8;
+}
+
+.banner-acao {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-inferior {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  min-height: var(--altura-nav);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.nav-inferior a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.nav-inferior a.ativo {
+  color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-inferior a.ativo {
+    color: var(--primary-600);
+  }
 }
