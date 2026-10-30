@@ -1,74 +1,274 @@
-<section class="card">
-  <h1>Nova vistoria</h1>
+@if (salva(); as v) {
+  <!-- Concluído: vistoria salva no aparelho (e enviada, se houver conexão) -->
+  <div class="pagina">
+    <section class="card pilha concluido">
+      <span class="icone-sucesso"><app-icone nome="check" [tamanho]="36" /></span>
+      <h1 class="titulo-tela">Vistoria registrada</h1>
+      <p class="muted">
+        Placa <span class="mono">{{ v.placa }}</span> · conformidade {{ conformidade() }}%
+      </p>
+      <app-chip-parecer [parecer]="parecer()" />
+      @if (sync.idsPendentes().has(v.id)) {
+        <span class="chip chip-offline"><app-icone nome="offline" [tamanho]="16" /> Salva no aparelho · envio pendente</span>
+        <p class="rotulo">Ela será enviada automaticamente quando a conexão voltar.</p>
+      } @else {
+        <span class="chip chip-success"><app-icone nome="check" [tamanho]="16" /> Sincronizada com o servidor</span>
+      }
+    </section>
 
-  <form (ngSubmit)="salvar()">
-    <label>
-      Placa do veículo
-      <input
-        type="text"
-        name="placa"
-        [(ngModel)]="placa"
-        placeholder="ABC1D23"
-        maxlength="8"
-        required
-      />
-    </label>
+    <section class="card pilha">
+      <h2 class="titulo-secao">Laudo em PDF</h2>
+      <button type="button" class="btn btn-primario" [disabled]="gerandoPdf()" (click)="baixarPdf()">
+        <app-icone nome="baixar" /> {{ gerandoPdf() ? 'Gerando...' : 'Baixar PDF' }}
+      </button>
+      <button type="button" class="btn btn-secundario" [disabled]="gerandoPdf()" (click)="compartilharPdf()">
+        <app-icone nome="email" /> Enviar por e-mail / compartilhar
+      </button>
+      @if (mensagemPdf()) {
+        <p class="aviso aviso-info" role="status">{{ mensagemPdf() }}</p>
+      }
+    </section>
 
-    <h2>Checklist</h2>
-
-    @for (item of itens; track item.nome) {
-      <div class="item">
-        <span class="item-nome">{{ item.nome }}</span>
-
-        <label class="status">
-          <input type="radio" [name]="item.nome" value="OK" [(ngModel)]="item.status" />
-          OK
-        </label>
-        <label class="status">
-          <input type="radio" [name]="item.nome" value="DEFEITO" [(ngModel)]="item.status" />
-          Defeito
-        </label>
-
-        <input
-          type="text"
-          class="observacao"
-          placeholder="Observação (opcional)"
-          [(ngModel)]="item.observacao"
-          [name]="item.nome + '-obs'"
-        />
-      </div>
-    }
-
-    <button type="submit" [disabled]="enviando()">
-      {{ enviando() ? 'Salvando...' : 'Salvar vistoria' }}
-    </button>
-  </form>
-
-  @if (mensagem()) {
-    <p class="sucesso">{{ mensagem() }}</p>
-  }
-  @if (erro()) {
-    <p class="erro">{{ erro() }}</p>
-  }
-</section>
-
-<section class="card">
-  <h2>Vistorias cadastradas</h2>
-
-  @if (vistorias().length === 0) {
-    <p>Nenhuma vistoria cadastrada ainda.</p>
-  } @else {
-    <ul>
-      @for (v of vistorias(); track v.id) {
-        <li>
-          <strong>{{ v.placa }}</strong> —
-          @for (item of v.itens; track item.nome) {
-            <span class="tag" [class.tag-defeito]="item.status === 'DEFEITO'">
-              {{ item.nome }}: {{ item.status }}
-            </span>
-          }
+    <div class="pilha">
+      <button type="button" class="btn btn-cta" (click)="novaVistoria()"><app-icone nome="mais" /> Nova vistoria</button>
+      <a routerLink="/painel" class="btn btn-fantasma">Voltar ao painel</a>
+    </div>
+  </div>
+} @else {
+  <div class="pagina com-rodape">
+    <!-- Stepper -->
+    <ol class="stepper" aria-label="Etapas da vistoria">
+      @for (nome of etapas; track nome; let i = $index) {
+        <li [class.atual]="i === etapa()" [class.feita]="i < etapa()" [attr.aria-current]="i === etapa() ? 'step' : null">
+          <span class="bolinha">
+            @if (i < etapa()) {
+              <app-icone nome="check" [tamanho]="14" />
+            } @else {
+              {{ i + 1 }}
+            }
+          </span>
+          <span class="nome-etapa">{{ nome }}</span>
         </li>
       }
-    </ul>
-  }
-</section>
+    </ol>
+
+    @switch (etapa()) {
+      @case (0) {
+        <h1 class="titulo-tela">Identificação do veículo</h1>
+
+        <section class="card pilha">
+          <label class="campo">
+            <span class="rotulo">Placa</span>
+            <input
+              class="input input-grande mono placa"
+              type="text"
+              name="placa"
+              [(ngModel)]="placa"
+              placeholder="ABC1D23"
+              maxlength="8"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+            />
+          </label>
+        </section>
+
+        <section class="pilha">
+          <h2 class="titulo-secao">Finalidade</h2>
+          <div class="finalidades" role="radiogroup" aria-label="Finalidade da vistoria">
+            @for (f of finalidades; track f) {
+              <button
+                type="button"
+                class="card finalidade"
+                role="radio"
+                [attr.aria-checked]="finalidade === f"
+                [class.selecionada]="finalidade === f"
+                (click)="finalidade = finalidade === f ? '' : f"
+              >
+                @if (finalidade === f) {
+                  <app-icone nome="check" [tamanho]="18" />
+                }
+                {{ f }}
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="card pilha">
+          <label class="campo">
+            <span class="rotulo">Hodômetro (km)</span>
+            <div class="linha">
+              <app-icone nome="hodometro" />
+              <input
+                class="input input-grande mono"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                name="hodometro"
+                [(ngModel)]="hodometro"
+                placeholder="0"
+              />
+            </div>
+          </label>
+          <p class="rotulo">Dica: fotografe o painel na próxima etapa como evidência.</p>
+        </section>
+      }
+
+      @case (1) {
+        <h1 class="titulo-tela">Checklist</h1>
+
+        <section class="pilha">
+          @for (item of itens(); track item.nome) {
+            <div class="card pilha">
+              <div class="linha item-cabecalho">
+                <h2 class="titulo-secao">{{ item.nome }}</h2>
+              </div>
+              <div class="segmentado" role="radiogroup" [attr.aria-label]="'Situação de ' + item.nome">
+                @for (op of opcoesStatus; track op.valor) {
+                  <button
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="item.status === op.valor"
+                    [class]="item.status === op.valor ? 'ativo-' + op.valor : ''"
+                    (click)="definirStatus(item, op.valor)"
+                  >
+                    <app-icone [nome]="op.icone" [tamanho]="18" />
+                    {{ rotuloStatus[op.valor] }}
+                  </button>
+                }
+              </div>
+              @if (item.status !== 'OK' || item.observacao) {
+                <input
+                  class="input"
+                  type="text"
+                  placeholder="Descreva o problema"
+                  [attr.aria-label]="'Observação sobre ' + item.nome"
+                  [ngModel]="item.observacao"
+                  (ngModelChange)="atualizarObservacao(item, $event)"
+                  [name]="item.nome + '-obs'"
+                />
+              }
+            </div>
+          }
+        </section>
+
+        <section class="card pilha">
+          <div class="linha item-cabecalho">
+            <h2 class="titulo-secao">Fotos</h2>
+            <span class="chip" [class.chip-success]="fotos().length > 0" [class.chip-offline]="fotos().length === 0">
+              <app-icone nome="camera" [tamanho]="16" /> {{ fotos().length }}/{{ maxFotos }}
+            </span>
+          </div>
+
+          <div class="galeria">
+            @for (foto of fotos(); track foto.dataUrl; let i = $index) {
+              <figure class="foto">
+                <img [src]="foto.dataUrl" [alt]="'Foto ' + (i + 1)" />
+                <input
+                  class="legenda"
+                  type="text"
+                  placeholder="Legenda"
+                  [attr.aria-label]="'Legenda da foto ' + (i + 1)"
+                  [(ngModel)]="foto.legenda"
+                  [name]="'legenda-' + i"
+                />
+                <button type="button" class="remover" [attr.aria-label]="'Remover foto ' + (i + 1)" (click)="removerFoto(i)">
+                  <app-icone nome="lixeira" [tamanho]="18" />
+                </button>
+              </figure>
+            }
+
+            @if (fotos().length < maxFotos) {
+              <label class="adicionar-foto" [class.ocupado]="processandoFoto()">
+                <!-- capture="environment" abre a câmera traseira no celular; no PC abre o seletor de arquivos -->
+                <input type="file" accept="image/*" capture="environment" (change)="anexarFotos($event)" [disabled]="processandoFoto()" />
+                <app-icone nome="camera" [tamanho]="28" />
+                <span>{{ processandoFoto() ? 'Processando...' : 'Tirar foto' }}</span>
+              </label>
+              <label class="adicionar-foto">
+                <input type="file" accept="image/*" multiple (change)="anexarFotos($event)" [disabled]="processandoFoto()" />
+                <app-icone nome="imagem" [tamanho]="28" />
+                <span>Galeria</span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+
+      @case (2) {
+        <h1 class="titulo-tela">Revisão</h1>
+
+        <section class="card resumo">
+          <div class="anel" [style.--valor]="conformidade()" [attr.aria-label]="'Índice de conformidade ' + conformidade() + '%'">
+            <span>{{ conformidade() }}%</span>
+          </div>
+          <div class="pilha">
+            <span class="rotulo">Parecer</span>
+            <app-chip-parecer [parecer]="parecer()" />
+            <span class="mono placa-resumo">{{ placa.toUpperCase() }}</span>
+          </div>
+        </section>
+
+        <section class="card pilha">
+          <h2 class="titulo-secao">Dados</h2>
+          <dl class="dados">
+            <div>
+              <dt class="rotulo">Finalidade</dt>
+              <dd>{{ finalidade || '—' }}</dd>
+            </div>
+            <div>
+              <dt class="rotulo">Hodômetro</dt>
+              <dd class="mono">{{ hodometro != null ? hodometro + ' km' : '—' }}</dd>
+            </div>
+            <div>
+              <dt class="rotulo">Fotos</dt>
+              <dd>{{ fotos().length }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="card pilha">
+          <h2 class="titulo-secao">Checklist</h2>
+          <ul class="lista-itens">
+            @for (item of itens(); track item.nome) {
+              <li>
+                <span>
+                  {{ item.nome }}
+                  @if (item.observacao) {
+                    <small class="muted">{{ item.observacao }}</small>
+                  }
+                </span>
+                <span
+                  class="chip"
+                  [class.chip-success]="item.status === 'OK'"
+                  [class.chip-warning]="item.status === 'ATENCAO'"
+                  [class.chip-danger]="item.status === 'DEFEITO'"
+                >
+                  {{ rotuloStatus[item.status] }}
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+
+    @if (erro()) {
+      <p class="aviso aviso-erro" role="alert"><app-icone nome="alerta" [tamanho]="20" /> {{ erro() }}</p>
+    }
+  </div>
+
+  <!-- Ações fixas no rodapé, na zona do polegar -->
+  <div class="rodape-acoes">
+    @if (etapa() > 0) {
+      <button type="button" class="btn btn-secundario" (click)="voltar()"><app-icone nome="voltar" /> Voltar</button>
+    }
+    @if (etapa() < etapas.length - 1) {
+      <button type="button" class="btn btn-primario" (click)="avancar()">Continuar <app-icone nome="avancar" /></button>
+    } @else {
+      <button type="button" class="btn btn-primario" [disabled]="enviando()" (click)="salvar()">
+        <app-icone nome="check" /> {{ enviando() ? 'Salvando...' : 'Concluir vistoria' }}
+      </button>
+    }
+  </div>
+}

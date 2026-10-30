@@ -1,1 +1,398 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * Design system do CheckFleet (ver especificação de design).
+ * As cores ficam em variáveis CSS (tokens); os componentes usam só os tokens,
+ * então o modo escuro é apenas uma troca de valores no fim deste bloco.
+ */
+:root {
+  --primary: #0f3b6e;
+  --primary-600: #1b5aa6;
+  --accent: #f5a623;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #101828;
+  --ink-muted: #5b6676;
+  --border: #d9dfe7;
+  --success: #1e8e4e;
+  --warning: #c77700;
+  --danger: #c62828;
+  --info: #0b79b8;
+  --offline: #475467;
+  --on-primary: #ffffff;
+
+  /* fundos suaves dos chips de status */
+  --success-bg: #e6f4ec;
+  --warning-bg: #fdf1e0;
+  --danger-bg: #fbe9e9;
+  --info-bg: #e3f1f9;
+  --offline-bg: #eceef2;
+
+  --raio-card: 14px;
+  --raio-botao: 12px;
+  --raio-campo: 10px;
+  --sombra: 0 1px 3px rgba(16, 24, 40, 0.1);
+
+  --fonte: 'Inter', Roboto, system-ui, sans-serif;
+  --fonte-mono: 'JetBrains Mono', 'Roboto Mono', ui-monospace, monospace;
+
+  --altura-nav: 64px;
+  color-scheme: light;
+}
+
+/* Modo escuro (uso noturno ou em galpão) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #0f3b6e;
+    --primary-600: #6ea8f0;
+    --bg: #0b1220;
+    --surface: #141c2e;
+    --ink: #f2f5f9;
+    --ink-muted: #a3adbd;
+    --border: #2a3550;
+    --success: #4cc283;
+    --warning: #f0a53a;
+    --danger: #f2706d;
+    --info: #5bb6e8;
+    --offline: #a3adbd;
+    --success-bg: #12301f;
+    --warning-bg: #35260d;
+    --danger-bg: #3a1515;
+    --info-bg: #0f2a3b;
+    --offline-bg: #1f2738;
+    --sombra: none;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--fonte);
+  font-size: 1rem; /* 16px, em rem para escalar com a fonte do sistema */
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
+/* ---------- Tipografia ---------- */
+.titulo-tela {
+  font-size: 1.375rem; /* 22 */
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.titulo-secao {
+  font-size: 1.0625rem; /* 17 */
+  font-weight: 600;
+}
+
+.rotulo {
+  font-size: 0.8125rem; /* 13 */
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.mono {
+  font-family: var(--fonte-mono);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+
+/* ---------- Layout ---------- */
+.pagina {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 16px calc(var(--altura-nav) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--raio-card);
+  box-shadow: var(--sombra);
+  padding: 16px;
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Botões (alvo de toque mínimo 48px, 56px nas ações principais) ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--raio-botao);
+  border: 2px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    transform 150ms;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: var(--primary);
+  color: var(--on-primary);
+  min-height: 56px;
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: var(--primary-600);
+}
+
+.btn-cta {
+  background: var(--accent);
+  color: #101828;
+  min-height: 56px;
+}
+
+.btn-secundario {
+  background: transparent;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-fantasma {
+  background: transparent;
+  color: var(--ink-muted);
+  padding: 0 12px;
+}
+
+.btn-perigo {
+  background: transparent;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn-bloco {
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-secundario {
+    border-color: var(--primary-600);
+    color: var(--primary-600);
+  }
+}
+
+/* ---------- Chips de status (sempre ícone + texto, nunca só cor) ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.chip-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+.chip-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.chip-info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+.chip-offline {
+  background: var(--offline-bg);
+  color: var(--offline);
+}
+
+/* ---------- Campos ---------- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--raio-campo);
+  background: var(--surface);
+  transition: border-color 150ms;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-600);
+}
+
+.input-grande {
+  min-height: 56px;
+  font-size: 1.375rem;
+}
+
+/* ---------- Controle segmentado (OK / Atenção / Reprovado) ---------- */
+.segmentado {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1.5px solid var(--border);
+  border-radius: var(--raio-campo);
+  overflow: hidden;
+}
+
+.segmentado button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 48px;
+  padding: 0 6px;
+  border: 0;
+  border-left: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.segmentado button:first-child {
+  border-left: 0;
+}
+
+.segmentado button.ativo-OK {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.segmentado button.ativo-ATENCAO {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+.segmentado button.ativo-DEFEITO {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ---------- Mensagens ---------- */
+.aviso {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--raio-campo);
+  font-weight: 500;
+}
+
+.aviso-erro {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.aviso-sucesso {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.aviso-info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+/* ---------- Estado vazio e skeleton ---------- */
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+.skeleton {
+  border-radius: var(--raio-card);
+  background: linear-gradient(90deg, var(--border) 25%, var(--offline-bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.2s infinite linear;
+}
+
+@keyframes skeleton {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

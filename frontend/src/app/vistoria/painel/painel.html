@@ -1,0 +1,77 @@
+<div class="pagina">
+  <header class="saudacao">
+    <h1 class="titulo-tela">{{ saudacao }}, {{ primeiroNome() }}</h1>
+    <p class="rotulo">{{ hoje | date: "EEEE, d 'de' MMMM" }}</p>
+  </header>
+
+  <section class="kpis" aria-label="Indicadores">
+    <div class="card kpi">
+      <span class="kpi-numero">{{ carregando() ? '–' : totalHoje() }}</span>
+      <span class="rotulo">Vistorias hoje</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-numero">{{ carregando() ? '–' : vistorias().length }}</span>
+      <span class="rotulo">Total registrado</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-numero">{{ taxaAprovacao() ?? '–' }}<small>%</small></span>
+      <span class="rotulo">Taxa de aprovação</span>
+    </div>
+  </section>
+
+  <a routerLink="/vistorias/nova" class="btn btn-cta btn-bloco cta">
+    <app-icone nome="camera" />
+    <span class="cta-texto">
+      Nova Vistoria
+      <small>Checklist + fotos · funciona offline</small>
+    </span>
+  </a>
+
+  <section class="pilha">
+    <div class="linha cabecalho-lista">
+      <h2 class="titulo-secao">Vistorias recentes</h2>
+      @if (vistorias().length > 5) {
+        <a routerLink="/laudos" class="link">Ver todas</a>
+      }
+    </div>
+
+    @if (carregando()) {
+      <div class="skeleton" style="height: 84px"></div>
+      <div class="skeleton" style="height: 84px"></div>
+    } @else if (erro()) {
+      <div class="card vazio">
+        <app-icone nome="alerta" [tamanho]="32" />
+        <p>Não foi possível ler as vistorias salvas no aparelho.</p>
+        <button type="button" class="btn btn-secundario" (click)="carregar()">Tentar novamente</button>
+      </div>
+    } @else if (recentes().length === 0) {
+      <div class="card vazio">
+        <app-icone nome="vistoria" [tamanho]="32" />
+        <p>Nenhuma vistoria registrada ainda.</p>
+        <a routerLink="/vistorias/nova" class="btn btn-primario">Fazer a primeira vistoria</a>
+      </div>
+    } @else {
+      @for (v of recentes(); track v.id) {
+        <article class="card item-vistoria">
+          <div class="item-topo">
+            <span class="placa mono">{{ v.placa }}</span>
+            <app-chip-parecer [parecer]="parecer(v.itens)" />
+          </div>
+          @if (sync.idsPendentes().has(v.id)) {
+            <span class="chip chip-offline pendente"><app-icone nome="offline" [tamanho]="16" /> Pendente de sync</span>
+          }
+          <p class="rotulo">
+            {{ v.finalidade || 'Vistoria' }} · {{ v.dataHora | date: 'dd/MM HH:mm' }}
+            @if (v.fotos.length) {
+              · {{ v.fotos.length }} foto(s)
+            }
+          </p>
+          <button type="button" class="btn btn-fantasma" [disabled]="gerandoPdf() === v.id" (click)="baixar(v)">
+            <app-icone nome="baixar" [tamanho]="20" />
+            {{ gerandoPdf() === v.id ? 'Gerando PDF...' : 'Baixar laudo' }}
+          </button>
+        </article>
+      }
+    }
+  </section>
+</div>

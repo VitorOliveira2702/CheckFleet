@@ -1,6 +1,9 @@
 {
-  "name": "frontend",
-  "short_name": "frontend",
+  "name": "CheckFleet - Vistoria de Frotas",
+  "short_name": "CheckFleet",
+  "theme_color": "#0F3B6E",
+  "background_color": "#0F3B6E",
+  "lang": "pt-BR",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
