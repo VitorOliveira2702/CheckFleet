@@ -9,7 +9,9 @@ export interface VistoriaLocal extends Vistoria {
 }
 
 const NOME_BANCO = 'checkfleet';
-const VERSAO = 1;
+// Versão 2: navegadores que rodaram a versão antiga do app já têm o banco na
+// versão 1 sem o índice 'statusSync'. Subir a versão força o onupgradeneeded.
+const VERSAO = 2;
 const STORE = 'vistorias';
 
 /**
@@ -70,10 +72,17 @@ export class VistoriaLocalService {
       const requisicao = indexedDB.open(NOME_BANCO, VERSAO);
 
       // Roda só na primeira vez (ou quando VERSAO aumenta): cria a "tabela".
+      // Cria só o que ainda não existe, para servir tanto para um banco novo
+      // quanto para um banco antigo que já tem a store mas não tem o índice.
       requisicao.onupgradeneeded = () => {
-        const store = requisicao.result.createObjectStore(STORE, { keyPath: 'id' });
+        const banco = requisicao.result;
+        const store = banco.objectStoreNames.contains(STORE)
+          ? requisicao.transaction!.objectStore(STORE)
+          : banco.createObjectStore(STORE, { keyPath: 'id' });
         // Índice para buscar rápido só as pendentes (a fila de sincronização).
-        store.createIndex('statusSync', 'statusSync');
+        if (!store.indexNames.contains('statusSync')) {
+          store.createIndex('statusSync', 'statusSync');
+        }
       };
       requisicao.onsuccess = () => resolve(requisicao.result);
       requisicao.onerror = () => reject(requisicao.error);

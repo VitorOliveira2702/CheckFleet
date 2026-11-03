@@ -1,10 +1,10 @@
 # IDEs e editores
 .vscode/*
-!.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea/
+.claude/
 
 # Sistema operacional
 .DS_Store
