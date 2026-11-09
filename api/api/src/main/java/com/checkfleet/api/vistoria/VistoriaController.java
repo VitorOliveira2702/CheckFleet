@@ -1,5 +1,6 @@
 package com.checkfleet.api.vistoria;
 
+import com.checkfleet.api.teste.FalhaSimulada;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Sort;
@@ -24,9 +25,11 @@ import java.util.Optional;
 public class VistoriaController {
 
     private final VistoriaRepository repository;
+    private final FalhaSimulada falhaSimulada;
 
-    public VistoriaController(VistoriaRepository repository) {
+    public VistoriaController(VistoriaRepository repository, FalhaSimulada falhaSimulada) {
         this.repository = repository;
+        this.falhaSimulada = falhaSimulada;
     }
 
     @GetMapping
@@ -72,6 +75,7 @@ public class VistoriaController {
      * vistoria em nome de outra pessoa.
      */
     private Vistoria salvar(VistoriaRequest request, Jwt usuario) {
+        falhaSimulada.antesDeGravar(); // só faz algo durante o teste T07 (ver FalhaSimulada)
         List<ItemVistoria> itens = request.itens().stream()
                 .map(item -> new ItemVistoria(item.nome(), item.status(), item.observacao()))
                 .toList();

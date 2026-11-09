@@ -149,7 +149,11 @@ export class NovaVistoria {
       await this.sync.registrar(vistoria);
       this.salva.set(vistoria);
     } catch (err) {
-      this.erro.set('Não foi possível salvar no aparelho. Verifique o espaço de armazenamento.');
+      this.erro.set(
+        this.sync.modoTradicional()
+          ? 'Sem resposta do servidor: a vistoria não foi salva (modo tradicional).'
+          : 'Não foi possível salvar no aparelho. Verifique o espaço de armazenamento.',
+      );
       console.error(err);
     } finally {
       this.enviando.set(false);

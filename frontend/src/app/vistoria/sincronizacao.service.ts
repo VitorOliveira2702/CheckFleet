@@ -9,6 +9,20 @@ import { Vistoria } from './vistoria.model';
 /** Quantas vistorias vão por requisição (cada uma pode ter até 12 fotos). */
 const TAMANHO_LOTE = 10;
 
+/** Onde fica guardado o modo escolhido para o experimento comparativo. */
+const CHAVE_MODO = 'checkfleet.modo';
+
+/** Números de uma execução de `sincronizar()`, usados nos testes de desempenho (T05 a T07). */
+export interface MedicaoSync {
+  inicio: string;
+  duracaoMs: number;
+  pendentesNoInicio: number;
+  confirmadas: number;
+  /** Tempo de cada lote enviado com sucesso, em milissegundos. */
+  temposLoteMs: number[];
+  falhou: boolean;
+}
+
 /**
  * Fila de sincronização offline-first (RF05 / RF06).
  *
@@ -35,6 +49,15 @@ export class SincronizacaoService {
   readonly idsPendentes = signal<Set<string>>(new Set());
   readonly sincronizando = signal(false);
 
+  /**
+   * Modo "tradicional": grupo de controle do experimento comparativo. Desliga a
+   * fila offline-first, e a vistoria passa a depender do servidor para ser salva.
+   */
+  readonly modoTradicional = signal(localStorage.getItem(CHAVE_MODO) === 'tradicional');
+
+  /** Histórico das sincronizações desde que o app abriu (para os testes). */
+  readonly medicoes: MedicaoSync[] = [];
+
   constructor() {
     this.atualizarPendentes();
     // effect: roda de novo sempre que `online` ou `logado` mudam.
@@ -49,20 +72,43 @@ export class SincronizacaoService {
 
   /** Salva no aparelho (sempre funciona) e tenta enviar em seguida. */
   async registrar(vistoria: Vistoria): Promise<void> {
+    if (this.modoTradicional()) {
+      // Sem fila: envia direto e espera a resposta. Se o envio falhar, o erro
+      // sobe para a tela e a vistoria se perde, como num app web comum.
+      await firstValueFrom(this.api.enviarLote([vistoria]));
+      return;
+    }
     await this.local.salvar({ ...vistoria, statusSync: 'pendente' });
     await this.atualizarPendentes();
     this.sincronizar(); // sem await: a tela não espera a rede
   }
 
+  /** Liga ou desliga o modo tradicional; a escolha continua valendo ao recarregar a página. */
+  definirModoTradicional(ativo: boolean): void {
+    localStorage.setItem(CHAVE_MODO, ativo ? 'tradicional' : 'offline-first');
+    this.modoTradicional.set(ativo);
+  }
+
   async sincronizar(): Promise<void> {
     if (this.sincronizando() || !navigator.onLine || !this.auth.logado()) return;
 
-    const pendentes = await this.local.pendentes();
-    if (pendentes.length === 0) return;
-
+    // Marcado antes do primeiro await: duas chamadas quase simultâneas (salvar
+    // e o evento `online`, por exemplo) não enviam a mesma fila em paralelo.
     this.sincronizando.set(true);
+    const inicio = performance.now();
+    const medicao: MedicaoSync = {
+      inicio: new Date().toISOString(),
+      duracaoMs: 0,
+      pendentesNoInicio: 0,
+      confirmadas: 0,
+      temposLoteMs: [],
+      falhou: false,
+    };
     try {
+      const pendentes = await this.local.pendentes();
+      medicao.pendentesNoInicio = pendentes.length;
       for (let i = 0; i < pendentes.length; i += TAMANHO_LOTE) {
+        const inicioLote = performance.now();
         const lote = pendentes.slice(i, i + TAMANHO_LOTE).map(semStatus);
         const confirmadas = await firstValueFrom(this.api.enviarLote(lote));
         // Grava a versão do servidor (com vistoriador e data confirmados).
@@ -70,13 +116,20 @@ export class SincronizacaoService {
           await this.local.salvar({ ...v, statusSync: 'sincronizada' });
         }
         await this.atualizarPendentes();
+        medicao.confirmadas += confirmadas.length;
+        medicao.temposLoteMs.push(Math.round(performance.now() - inicioLote));
       }
     } catch (erro) {
       // Sem rede ou servidor fora do ar: tudo que não foi confirmado continua
       // na fila e será reenviado na próxima tentativa.
+      medicao.falhou = true;
       console.warn('Sincronização adiada:', erro);
     } finally {
       this.sincronizando.set(false);
+      if (medicao.pendentesNoInicio > 0) {
+        medicao.duracaoMs = Math.round(performance.now() - inicio);
+        this.medicoes.push(medicao);
+      }
     }
   }
 
@@ -96,9 +149,9 @@ export class SincronizacaoService {
     return this.local.listar();
   }
 
-  private async atualizarPendentes(): Promise<void> {
-    const pendentes = await this.local.pendentes();
-    this.idsPendentes.set(new Set(pendentes.map((v) => v.id)));
+  /** Relê do IndexedDB quais vistorias estão na fila (só os ids, sem as fotos). */
+  async atualizarPendentes(): Promise<void> {
+    this.idsPendentes.set(new Set(await this.local.idsPendentes()));
   }
 }
 

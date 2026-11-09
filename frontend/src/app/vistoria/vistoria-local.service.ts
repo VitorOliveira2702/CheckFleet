@@ -49,13 +49,25 @@ export class VistoriaLocalService {
     return aguardar<VistoriaLocal[]>(store.index('statusSync').getAll('pendente'));
   }
 
+  /** Só os ids da fila, sem carregar os dados (e as fotos) de cada vistoria. */
+  async idsPendentes(): Promise<string[]> {
+    const store = await this.store('readonly');
+    return aguardar(store.index('statusSync').getAllKeys('pendente')) as Promise<string[]>;
+  }
+
+  /** Remove uma vistoria do aparelho. Usado apenas pelas ferramentas de teste. */
+  async excluir(id: string): Promise<void> {
+    const store = await this.store('readwrite');
+    await aguardar(store.delete(id));
+  }
+
   /**
    * Guarda a lista vinda do servidor como "sincronizada", para o painel e os
    * laudos continuarem disponíveis offline. Vistorias ainda pendentes neste
    * aparelho não são sobrescritas.
    */
   async salvarDoServidor(lista: Vistoria[]): Promise<void> {
-    const pendentes = new Set((await this.pendentes()).map((v) => v.id));
+    const pendentes = new Set(await this.idsPendentes());
     const store = await this.store('readwrite');
     await Promise.all(
       lista.filter((v) => !pendentes.has(v.id)).map((v) => aguardar(store.put({ ...v, statusSync: 'sincronizada' }))),
