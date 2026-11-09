@@ -70,9 +70,9 @@ public class VistoriaController {
     }
 
     /**
-     * O vistoriador vem do token do Google já validado pelo Spring Security
-     * (ver SecurityConfig), e não do JSON, para que ninguém registre uma
-     * vistoria em nome de outra pessoa.
+     * O vistoriador vem do token já validado pelo Spring Security (do Google ou
+     * emitido pela API no login com senha; ver SecurityConfig), e não do JSON,
+     * para que ninguém registre uma vistoria em nome de outra pessoa.
      */
     private Vistoria salvar(VistoriaRequest request, Jwt usuario) {
         falhaSimulada.antesDeGravar(); // só faz algo durante o teste T07 (ver FalhaSimulada)

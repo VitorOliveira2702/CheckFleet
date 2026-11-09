@@ -5,10 +5,12 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
 /**
- * Coloca o token do Google em toda chamada à API ("Authorization: Bearer ...").
+ * Coloca o token em toda chamada à API ("Authorization: Bearer ...").
  *
- * O token do Google vale cerca de 1 hora. Quando a API responde 401 (token
- * vencido ou inválido), o usuário é mandado de volta para o login.
+ * O token do Google vale cerca de 1 hora; o do login com senha, 12 horas.
+ * Quando a API responde 401 a uma chamada que levava token (token vencido ou
+ * inválido), o usuário é mandado de volta para o login. Um 401 sem token é
+ * só uma senha errada na tela de login, e quem trata é a própria tela.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
@@ -19,7 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(requisicao).pipe(
     catchError((erro: unknown) => {
-      if (erro instanceof HttpErrorResponse && erro.status === 401) {
+      if (token && erro instanceof HttpErrorResponse && erro.status === 401) {
         auth.sair();
         router.navigate(['/login'], { queryParams: { expirou: 1 } });
       }

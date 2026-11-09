@@ -32,7 +32,10 @@ import { Icone } from '../shared/icone';
         } @else {
           <span class="chip chip-offline"><app-icone nome="offline" [tamanho]="16" /> Offline</span>
         }
-        <p class="rotulo">Conta autenticada com Google. Depois do primeiro login, o app abre mesmo sem internet.</p>
+        <p class="rotulo">
+          Conta autenticada {{ auth.usuario()?.provedor === 'senha' ? 'com e-mail e senha' : 'com Google' }}.
+          Depois do primeiro login, o app abre mesmo sem internet.
+        </p>
       </section>
 
       <button type="button" class="btn btn-perigo" (click)="sair()"><app-icone nome="sair" /> Sair da conta</button>

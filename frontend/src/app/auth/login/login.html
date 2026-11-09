@@ -6,8 +6,8 @@
   </div>
 
   <section class="card pilha cartao">
-    <h2 class="titulo-secao">Entrar</h2>
-    <p class="muted">Use sua conta Google. Depois do primeiro acesso, o app abre mesmo sem internet.</p>
+    <h2 class="titulo-secao">{{ criandoConta() ? 'Criar conta' : 'Entrar' }}</h2>
+    <p class="muted">Use sua conta Google ou seu e-mail. Depois do primeiro acesso, o app abre mesmo sem internet.</p>
 
     @if (expirou) {
       <p class="aviso aviso-info"><app-icone nome="alerta" [tamanho]="20" /> Sua sessão expirou. Entre novamente.</p>
@@ -25,14 +25,63 @@
       <div #botaoGoogle class="botao-google"></div>
     }
 
-    @if (erro()) {
+    @if (erroGoogle()) {
       <div class="aviso aviso-erro">
         <app-icone nome="offline" [tamanho]="20" />
-        <span>{{ erro() }}</span>
+        <span>{{ erroGoogle() }}</span>
       </div>
       <button type="button" class="btn btn-secundario" [disabled]="!conectividade.online()" (click)="mostrarBotaoGoogle()">
         Tentar novamente
       </button>
     }
+
+    <p class="divisor"><span>ou com e-mail</span></p>
+
+    <form class="pilha" (ngSubmit)="enviar()">
+      @if (criandoConta()) {
+        <label class="campo">
+          <span class="rotulo">Nome</span>
+          <input class="input" type="text" name="nome" [(ngModel)]="nome" autocomplete="name" required />
+        </label>
+      }
+      <label class="campo">
+        <span class="rotulo">E-mail</span>
+        <input class="input" type="email" name="email" [(ngModel)]="email" autocomplete="email" required />
+      </label>
+      <label class="campo">
+        <span class="rotulo">Senha</span>
+        <input
+          class="input"
+          type="password"
+          name="senha"
+          [(ngModel)]="senha"
+          [attr.autocomplete]="criandoConta() ? 'new-password' : 'current-password'"
+          [attr.minlength]="criandoConta() ? 8 : null"
+          required
+        />
+        @if (criandoConta()) {
+          <span class="rotulo">Pelo menos 8 caracteres.</span>
+        }
+      </label>
+
+      @if (erroSenha()) {
+        <div class="aviso aviso-erro" role="alert">
+          <app-icone nome="alerta" [tamanho]="20" />
+          <span>{{ erroSenha() }}</span>
+        </div>
+      }
+
+      <button type="submit" class="btn btn-primario btn-bloco" [disabled]="enviando()">
+        @if (enviando()) {
+          Aguarde...
+        } @else {
+          {{ criandoConta() ? 'Criar conta' : 'Entrar' }}
+        }
+      </button>
+    </form>
+
+    <button type="button" class="btn btn-fantasma" (click)="alternarModo()">
+      {{ criandoConta() ? 'Já tenho conta: entrar' : 'Não tem conta? Criar conta' }}
+    </button>
   </section>
 </div>
