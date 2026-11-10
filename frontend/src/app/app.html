@@ -14,6 +14,13 @@
     </div>
   </header>
 
+  @if (sync.modoTradicional()) {
+    <div class="banner banner-offline" role="status">
+      <app-icone nome="alerta" [tamanho]="18" />
+      Modo tradicional (teste): sem resposta do servidor, a vistoria é perdida
+    </div>
+  }
+
   @if (!conectividade.online()) {
     <div class="banner banner-offline" role="status">
       <app-icone nome="offline" [tamanho]="18" />
