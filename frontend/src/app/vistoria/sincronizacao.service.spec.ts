@@ -1,7 +1,7 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { ConectividadeService } from '../shared/conectividade.service';
 import { SincronizacaoService } from './sincronizacao.service';
@@ -106,5 +106,31 @@ describe('SincronizacaoService', () => {
     await sync.sincronizar();
 
     expect((await local.pendentes()).map((p) => p.id)).toEqual([b.id]);
+    // e não fica reenviando a não confirmada em loop: só uma chamada à API
+    expect(api.enviarLote).toHaveBeenCalledTimes(3); // 2 falhas ao registrar + 1 envio
+  });
+
+  it('envia também a vistoria salva enquanto um envio estava em andamento', async () => {
+    // O servidor só responde quando o teste liberar, para dar tempo de salvar
+    // a segunda vistoria no meio do envio da primeira.
+    const respostas = new Subject<Vistoria[]>();
+    const lotes: Vistoria[][] = [];
+    api.enviarLote.mockImplementation((lote: Vistoria[]) => {
+      lotes.push(lote);
+      return lotes.length === 1 ? respostas : of(lote);
+    });
+    const a = novaVistoria('FFF6F66');
+    const b = novaVistoria('GGG7G77');
+
+    await sync.registrar(a); // começa a enviar A e fica esperando o servidor
+    await vi.waitFor(() => expect(lotes).toHaveLength(1));
+    await sync.registrar(b); // B entra na fila durante o envio de A
+    respostas.next(lotes[0]); // o servidor confirma A
+    respostas.complete();
+    await aguardarEnvio();
+
+    expect(lotes.map((l) => l.map((v) => v.placa))).toEqual([['FFF6F66'], ['GGG7G77']]);
+    expect(await local.pendentes()).toHaveLength(0);
+    expect(sync.idsPendentes().size).toBe(0);
   });
 });

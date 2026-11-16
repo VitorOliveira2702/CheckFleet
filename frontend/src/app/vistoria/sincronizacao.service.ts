@@ -105,19 +105,29 @@ export class SincronizacaoService {
       falhou: false,
     };
     try {
-      const pendentes = await this.local.pendentes();
+      // Ids já enviados nesta execução. Serve para repetir o envio só quando
+      // entraram vistorias NOVAS na fila durante o envio (o inspetor salvou
+      // outra enquanto as anteriores subiam). Uma vistoria que o servidor não
+      // confirmou não é reenviada aqui, senão ficaria em loop; ela espera o
+      // próximo gatilho, como antes.
+      const jaEnviadas = new Set<string>();
+      let pendentes = await this.local.pendentes();
       medicao.pendentesNoInicio = pendentes.length;
-      for (let i = 0; i < pendentes.length; i += TAMANHO_LOTE) {
-        const inicioLote = performance.now();
-        const lote = pendentes.slice(i, i + TAMANHO_LOTE).map(semStatus);
-        const confirmadas = await firstValueFrom(this.api.enviarLote(lote));
-        // Grava a versão do servidor (com vistoriador e data confirmados).
-        for (const v of confirmadas) {
-          await this.local.salvar({ ...v, statusSync: 'sincronizada' });
+      while (pendentes.length > 0) {
+        for (let i = 0; i < pendentes.length; i += TAMANHO_LOTE) {
+          const inicioLote = performance.now();
+          const lote = pendentes.slice(i, i + TAMANHO_LOTE).map(semStatus);
+          const confirmadas = await firstValueFrom(this.api.enviarLote(lote));
+          // Grava a versão do servidor (com vistoriador e data confirmados).
+          for (const v of confirmadas) {
+            await this.local.salvar({ ...v, statusSync: 'sincronizada' });
+          }
+          await this.atualizarPendentes();
+          medicao.confirmadas += confirmadas.length;
+          medicao.temposLoteMs.push(Math.round(performance.now() - inicioLote));
         }
-        await this.atualizarPendentes();
-        medicao.confirmadas += confirmadas.length;
-        medicao.temposLoteMs.push(Math.round(performance.now() - inicioLote));
+        pendentes.forEach((v) => jaEnviadas.add(v.id));
+        pendentes = (await this.local.pendentes()).filter((v) => !jaEnviadas.has(v.id));
       }
     } catch (erro) {
       // Sem rede ou servidor fora do ar: tudo que não foi confirmado continua
